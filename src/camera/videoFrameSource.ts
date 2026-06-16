@@ -28,6 +28,7 @@ export class VideoFrameSource implements FrameSource {
   private landmarker: FaceLandmarker | null = null;
   private stream: MediaStream | null = null;
   private lastTs = -1;
+  private lastVideoTime = -1;
 
   constructor(video: HTMLVideoElement, kind: 'webcam' | 'sampleVideo') {
     this.video = video;
@@ -62,6 +63,11 @@ export class VideoFrameSource implements FrameSource {
     const v = this.video;
     const lm = this.landmarker;
     if (!lm || v.readyState < 2 || v.videoWidth === 0) return [];
+
+    // Skip frames we've already processed — on a high-refresh display rAF can
+    // outrun the camera, and re-running MediaPipe on the same frame is wasteful.
+    if (v.currentTime === this.lastVideoTime) return [];
+    this.lastVideoTime = v.currentTime;
 
     // detectForVideo requires strictly increasing timestamps.
     let ts = now;

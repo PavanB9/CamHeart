@@ -434,3 +434,35 @@ input[type='range'] {
     opacity: 0;
   }
 }
+
+.disclaimer {
+  margin: 0.9rem 0 0;
+  font-size: 0.62rem;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+/* ---- Responsive: stack the control panel under the stage on narrow windows ---- */
+@media (max-width: 920px) {
+  html,
+  body,
+  #root {
+    overflow: auto;
+  }
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'top'
+      'stage'
+      'panel';
+    height: auto;
+    min-height: 100%;
+  }
+  .panel {
+    border-left: 0;
+    border-top: 1px solid var(--panel-border);
+  }
+  .readouts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

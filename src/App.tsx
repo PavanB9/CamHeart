@@ -249,6 +249,11 @@ export default function App() {
         <button className="calib-btn" onClick={e.startCalibration} disabled={v.calibrating}>
           {v.calibrating ? 'Calibrating…' : 'Calibrate (45s rest)'}
         </button>
+
+        <p className="disclaimer">
+          Not a medical device — readings are approximate and processed entirely
+          on your machine. Best with even lighting and ~10 s of stillness.
+        </p>
       </aside>
     </div>
   );
