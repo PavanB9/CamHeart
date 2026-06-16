@@ -8,10 +8,13 @@ let instance: FaceLandmarker | null = null;
 let loading: Promise<FaceLandmarker> | null = null;
 
 async function create(delegate: 'GPU' | 'CPU'): Promise<FaceLandmarker> {
-  const fileset = await FilesetResolver.forVisionTasks('/models/wasm');
+  // BASE_URL is '/' in dev and '/CamHeart/' in the Pages build, so the vendored
+  // assets resolve correctly in both.
+  const base = import.meta.env.BASE_URL;
+  const fileset = await FilesetResolver.forVisionTasks(`${base}models/wasm`);
   return FaceLandmarker.createFromOptions(fileset, {
     baseOptions: {
-      modelAssetPath: '/models/face_landmarker.task',
+      modelAssetPath: `${base}models/face_landmarker.task`,
       delegate,
     },
     runningMode: 'VIDEO',

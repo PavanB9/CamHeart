@@ -1,5 +1,7 @@
 # CamHeart — Remote Vital & Stress Tracker (rPPG HUD)
 
+**▶ Live (runs in your browser, no install): https://pavanb9.github.io/CamHeart/**
+
 A cyberpunk webcam overlay that estimates your **heart rate**, **breathing rate**,
 and a **stress proxy** in real time — using only a regular camera, entirely in the
 browser, with no data leaving your machine.
