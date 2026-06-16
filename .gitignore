@@ -20,6 +20,9 @@ public/samples/*.mov
 .env.*
 !.env.example
 
+# Local tooling config (preview launch, etc.)
+.claude/
+
 # Editor / OS
 .vscode/*
 !.vscode/extensions.json

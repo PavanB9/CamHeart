@@ -29,7 +29,7 @@ export const config = {
   // ---- Smoothing ----
   bpmEmaAlpha: 0.2, // EMA factor for the displayed BPM
   breathsEmaAlpha: 0.2,
-  stressEmaAlpha: 0.05, // slower EMA for the stress score
+  stressEmaAlpha: 0.1, // slower EMA for the stress score (≈10 s time constant)
 
   // ---- Confidence gating ----
   minSnrDb: 2.0, // below this we hold the last value / show "acquiring"
