@@ -93,8 +93,11 @@ export function useEngine() {
       const src = sourceRef.current;
       if (src) {
         try {
-          const s = src.sample(now);
-          if (s) engine.pushSample(s.t, s.r, s.g, s.b);
+          const samples = src.sample(now);
+          for (let i = 0; i < samples.length; i++) {
+            const s = samples[i];
+            engine.pushSample(s.t, s.r, s.g, s.b);
+          }
         } catch {
           /* a dropped frame shouldn't kill the loop */
         }

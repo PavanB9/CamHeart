@@ -272,7 +272,7 @@ input[type='range'] {
 .feed {
   width: 100%;
   max-height: 42vh;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 .feed--mirror {
@@ -307,4 +307,130 @@ input[type='range'] {
   font-size: 0.72rem;
   color: var(--hud-amber);
   letter-spacing: 0.08rem;
+}
+
+/* ---- Hero heart-rate card ---- */
+.stat--hero {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.hero-text {
+  display: flex;
+  flex-direction: column;
+}
+.pulse-heart {
+  flex: none;
+  transform-origin: center;
+  animation-name: heartbeat;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  filter: drop-shadow(0 0 8px rgba(255, 77, 94, 0.6));
+}
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  12% {
+    transform: scale(1.18);
+  }
+  26% {
+    transform: scale(1);
+  }
+}
+
+/* ---- Stress gauge card ---- */
+.stat--gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.6rem;
+}
+.gauge-text {
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+.gauge-label {
+  letter-spacing: 0.2rem;
+}
+
+/* ---- HUD overlay (camera) ---- */
+.hud-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ---- Decorative HUD frame ---- */
+.hud-frame {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+  overflow: hidden;
+}
+.corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--hud-cyan-dim);
+}
+.corner--tl {
+  top: 10px;
+  left: 10px;
+  border-right: 0;
+  border-bottom: 0;
+}
+.corner--tr {
+  top: 10px;
+  right: 10px;
+  border-left: 0;
+  border-bottom: 0;
+}
+.corner--bl {
+  bottom: 10px;
+  left: 10px;
+  border-right: 0;
+  border-top: 0;
+}
+.corner--br {
+  bottom: 10px;
+  right: 10px;
+  border-left: 0;
+  border-top: 0;
+}
+.scanline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(25, 230, 255, 0.35),
+    transparent
+  );
+  animation: scan 7s linear infinite;
+}
+@keyframes scan {
+  0% {
+    top: -2%;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    top: 102%;
+    opacity: 0;
+  }
 }

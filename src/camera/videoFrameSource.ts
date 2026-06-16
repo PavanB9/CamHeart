@@ -58,10 +58,10 @@ export class VideoFrameSource implements FrameSource {
     this.tracking = { hasFace: false, rois: null };
   }
 
-  sample(now: number): FrameSample | null {
+  sample(now: number): FrameSample[] {
     const v = this.video;
     const lm = this.landmarker;
-    if (!lm || v.readyState < 2 || v.videoWidth === 0) return null;
+    if (!lm || v.readyState < 2 || v.videoWidth === 0) return [];
 
     // detectForVideo requires strictly increasing timestamps.
     let ts = now;
@@ -72,7 +72,7 @@ export class VideoFrameSource implements FrameSource {
     const faces = res.faceLandmarks;
     if (!faces || faces.length === 0) {
       this.tracking = { hasFace: false, rois: null };
-      return null;
+      return [];
     }
 
     const rois = computeRois(faces[0]);
@@ -89,8 +89,8 @@ export class VideoFrameSource implements FrameSource {
     this.ctx.drawImage(v, 0, 0, w, h);
     const img = this.ctx.getImageData(0, 0, w, h);
     const rgb = meanRgbOverRois(img, rois);
-    if (!rgb) return null;
+    if (!rgb) return [];
 
-    return { t: now, r: rgb.r, g: rgb.g, b: rgb.b };
+    return [{ t: now, r: rgb.r, g: rgb.g, b: rgb.b }];
   }
 }

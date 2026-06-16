@@ -3,6 +3,10 @@ import { useEngine } from './state/useEngine';
 import type { Mode } from './state/useEngine';
 import HeartGraph from './hud/HeartGraph';
 import Vignette from './hud/Vignette';
+import PulseHeart from './hud/PulseHeart';
+import StressGauge from './hud/StressGauge';
+import HudFrame from './hud/HudFrame';
+import HudOverlay from './hud/HudOverlay';
 import { palette } from './hud/palette';
 import type { RppgAlgorithm } from './config';
 
@@ -97,6 +101,7 @@ export default function App() {
   return (
     <div className="app">
       <Vignette stress={v.stress} />
+      <HudFrame />
 
       <header className="topbar">
         <span className="logo">
@@ -116,19 +121,29 @@ export default function App() {
 
       <main className="stage">
         <section className="readouts">
-          <Stat label="HEART RATE" value={v.bpm ? v.bpm.toFixed(0) : '— —'} unit="bpm" />
+          <div className="stat stat--hero">
+            <PulseHeart bpm={v.bpm} />
+            <div className="hero-text">
+              <div className="stat-label">HEART RATE</div>
+              <div className="stat-value" style={{ color: palette.cyan }}>
+                {v.bpm ? v.bpm.toFixed(0) : '— —'}
+                <span className="stat-unit">bpm</span>
+              </div>
+            </div>
+          </div>
+
           <Stat
             label="BREATHING"
             value={v.breathsPerMin ? v.breathsPerMin.toFixed(0) : '—'}
             unit="/min"
             color={palette.green}
           />
-          <Stat
-            label="STRESS"
-            value={(v.stress * 100).toFixed(0)}
-            unit="%"
-            color={palette.magenta}
-          />
+
+          <div className="stat stat--gauge">
+            <StressGauge value={v.stress} />
+            <div className="stat-label gauge-label">STRESS</div>
+          </div>
+
           <Stat
             label="CONFIDENCE"
             value={(v.confidence * 100).toFixed(0)}
@@ -144,6 +159,13 @@ export default function App() {
             playsInline
             muted
           />
+          {cameraMode && (
+            <HudOverlay
+              videoRef={e.videoRef}
+              trackingRef={e.trackingRef}
+              mirror={e.mode === 'webcam'}
+            />
+          )}
           {cameraMode && !e.faceTracked && (
             <div className="media-hint">
               Point the camera at your face · sit still · even lighting
