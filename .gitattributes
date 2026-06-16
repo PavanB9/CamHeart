@@ -1,0 +1,15 @@
+# Normalise line endings so a Windows checkout and a macOS checkout stay
+# byte-identical in the repo (LF in git, native in the working copy).
+* text=auto eol=lf
+
+# Binary assets — never touch these.
+*.task binary
+*.wasm binary
+*.mp4 binary
+*.webm binary
+*.mov binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary

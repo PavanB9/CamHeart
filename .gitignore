@@ -1,0 +1,30 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+dist-ssr
+*.tsbuildinfo
+
+# Vendored MediaPipe model + wasm (fetched locally via scripts/fetch-models.mjs)
+public/models/
+
+# Sample videos for cameraless testing (large, kept local only)
+public/samples/*.mp4
+public/samples/*.webm
+public/samples/*.mov
+
+# Local env
+*.local
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.log
+npm-debug.log*
+yarn-error.log*

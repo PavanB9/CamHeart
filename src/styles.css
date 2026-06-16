@@ -1,0 +1,79 @@
+:root {
+  /* Cyberpunk HUD palette */
+  --bg: #05080d;
+  --bg-2: #081320;
+  --panel: rgba(8, 18, 30, 0.72);
+  --panel-border: rgba(25, 230, 255, 0.28);
+  --hud-cyan: #19e6ff;
+  --hud-cyan-dim: rgba(25, 230, 255, 0.35);
+  --hud-magenta: #ff3da6;
+  --hud-green: #28ffa6;
+  --hud-amber: #ffb020;
+  --hud-red: #ff4d5e;
+  --text: #cde8f0;
+  --text-dim: #6f8a99;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', ui-monospace, Consolas,
+    monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  overflow: hidden;
+}
+
+.app {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Phase 0 boot screen ---- */
+.app--boot {
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(120% 120% at 50% 0%, var(--bg-2) 0%, var(--bg) 60%);
+}
+
+.boot-card {
+  text-align: center;
+  padding: 2.5rem 3rem;
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  background: var(--panel);
+  box-shadow: 0 0 60px rgba(25, 230, 255, 0.08);
+}
+
+.boot-title {
+  margin: 0;
+  font-size: 2.6rem;
+  letter-spacing: 0.4rem;
+  color: var(--hud-cyan);
+  text-shadow: 0 0 18px var(--hud-cyan-dim);
+}
+
+.boot-sub {
+  margin: 0.4rem 0 1.4rem;
+  color: var(--text);
+  letter-spacing: 0.15rem;
+}
+
+.boot-status {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.2rem;
+}
