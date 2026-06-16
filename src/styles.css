@@ -1,19 +1,34 @@
 :root {
-  /* Cyberpunk HUD palette */
-  --bg: #05080d;
+  /* Base palette */
+  --bg: #04070c;
   --bg-2: #081320;
-  --panel: rgba(8, 18, 30, 0.72);
-  --panel-border: rgba(25, 230, 255, 0.22);
   --hud-cyan: #19e6ff;
   --hud-cyan-dim: rgba(25, 230, 255, 0.35);
   --hud-magenta: #ff3da6;
   --hud-green: #28ffa6;
   --hud-amber: #ffb020;
   --hud-red: #ff4d5e;
-  --text: #cde8f0;
-  --text-dim: #6f8a99;
+  --text: #eaf6fb;
+  --text-dim: #8aa3b2;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', ui-monospace, Consolas,
     monospace;
+
+  /* Liquid Glass system */
+  --glass-bg: rgba(18, 28, 43, 0.62);
+  --glass-bg-strong: rgba(32, 46, 64, 0.74);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-sheen: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.18),
+    rgba(255, 255, 255, 0.04) 36%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  --glass-blur: blur(18px) saturate(160%);
+  --radius: 22px;
+  --radius-sm: 13px;
+  --shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+  --inset-edge: inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.28);
 }
 
 * {
@@ -25,10 +40,22 @@ body,
 #root {
   margin: 0;
   height: 100%;
-  background: var(--bg);
   color: var(--text);
   font-family: var(--font-mono);
   overflow: hidden;
+}
+
+/* Deep, colourful ambient backdrop for the glass to refract. */
+body {
+  background:
+    radial-gradient(34rem 34rem at 12% 10%, rgba(25, 230, 255, 0.2), transparent 60%),
+    radial-gradient(36rem 36rem at 88% 90%, rgba(255, 61, 166, 0.16), transparent 62%),
+    var(--bg);
+}
+
+#root,
+.app {
+  background: transparent;
 }
 
 .app {
@@ -37,11 +64,20 @@ body,
   width: 100%;
   display: grid;
   grid-template-rows: auto 1fr;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 1fr 340px;
   grid-template-areas:
     'top top'
     'stage panel';
-  background: radial-gradient(120% 120% at 50% 0%, var(--bg-2) 0%, var(--bg) 55%);
+}
+
+/* ---- Glass surface helper (static panels only — backdrop-filter is costly,
+   so animated surfaces like the canvas/video use a plain translucent fill) ---- */
+.topbar,
+.stat,
+.panel {
+  background: var(--glass-sheen), var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow), var(--inset-edge);
 }
 
 /* ---- Top bar ---- */
@@ -51,7 +87,10 @@ body,
   align-items: center;
   gap: 0.8rem;
   padding: 0.9rem 1.4rem;
-  border-bottom: 1px solid var(--panel-border);
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
 }
 
 .logo {
@@ -59,7 +98,7 @@ body,
   font-weight: 700;
   letter-spacing: 0.32rem;
   color: var(--hud-cyan);
-  text-shadow: 0 0 16px var(--hud-cyan-dim);
+  text-shadow: 0 0 18px var(--hud-cyan-dim);
 }
 
 .logo-dot {
@@ -69,10 +108,12 @@ body,
 .badge {
   font-size: 0.66rem;
   letter-spacing: 0.18rem;
-  padding: 0.22rem 0.55rem;
-  border-radius: 4px;
-  border: 1px solid var(--panel-border);
+  padding: 0.28rem 0.62rem;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
   color: var(--text-dim);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .badge--mode {
@@ -87,14 +128,21 @@ body,
   border-color: rgba(255, 176, 32, 0.4);
 }
 
+.status-msg {
+  font-size: 0.72rem;
+  color: var(--hud-amber);
+  letter-spacing: 0.08rem;
+}
+
 /* ---- Stage ---- */
 .stage {
   grid-area: stage;
   display: flex;
   flex-direction: column;
-  gap: 1.4rem;
+  gap: 1.3rem;
   padding: 1.8rem;
   justify-content: center;
+  min-width: 0;
 }
 
 .readouts {
@@ -104,10 +152,10 @@ body,
 }
 
 .stat {
-  border: 1px solid var(--panel-border);
-  border-radius: 10px;
-  background: var(--panel);
-  padding: 1rem 1.2rem;
+  position: relative;
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  overflow: hidden;
 }
 
 .stat-label {
@@ -117,10 +165,11 @@ body,
 }
 
 .stat-value {
-  margin-top: 0.35rem;
+  margin-top: 0.4rem;
   font-size: 2.4rem;
   font-weight: 700;
   line-height: 1;
+  text-shadow: 0 0 22px currentColor;
 }
 
 .stat-unit {
@@ -128,14 +177,66 @@ body,
   font-weight: 400;
   margin-left: 0.3rem;
   color: var(--text-dim);
+  text-shadow: none;
 }
 
+/* Hero heart-rate card */
+.stat--hero {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.hero-text {
+  display: flex;
+  flex-direction: column;
+}
+.pulse-heart {
+  flex: none;
+  transform-origin: center;
+  animation-name: heartbeat;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  filter: drop-shadow(0 0 10px rgba(255, 77, 94, 0.7));
+}
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  12% {
+    transform: scale(1.18);
+  }
+  26% {
+    transform: scale(1);
+  }
+}
+
+/* Stress gauge card */
+.stat--gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.7rem;
+}
+.gauge-text {
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+.gauge-label {
+  letter-spacing: 0.2rem;
+}
+
+/* ---- Waveform ---- */
 .heart-graph {
   width: 100%;
   display: block;
-  border: 1px solid var(--panel-border);
-  border-radius: 10px;
-  background: rgba(3, 8, 14, 0.6);
+  border-radius: var(--radius);
+  background: var(--glass-sheen), rgba(7, 14, 24, 0.5);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow), var(--inset-edge);
 }
 
 .telemetry {
@@ -156,12 +257,14 @@ body,
 /* ---- Side panel ---- */
 .panel {
   grid-area: panel;
-  border-left: 1px solid var(--panel-border);
+  border-radius: 0;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
   padding: 1.4rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  background: rgba(6, 12, 20, 0.5);
 }
 
 .panel h3 {
@@ -175,14 +278,14 @@ body,
 .panel-note {
   margin: 0;
   font-size: 0.72rem;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--text-dim);
 }
 
 .slider {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .slider-label {
@@ -192,54 +295,144 @@ body,
 }
 
 input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
-  accent-color: var(--hud-cyan);
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff, rgba(255, 255, 255, 0.55));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+input[type='range']::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff, rgba(255, 255, 255, 0.55));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
 }
 
 .algo {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .seg {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
+/* Glassy pill buttons */
 .seg-btn,
 .calib-btn {
   font-family: var(--font-mono);
   font-size: 0.72rem;
   letter-spacing: 0.12rem;
-  padding: 0.5rem 0.8rem;
-  border-radius: 6px;
-  border: 1px solid var(--panel-border);
-  background: transparent;
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
   color: var(--text-dim);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.18s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .seg-btn.on {
-  color: var(--bg);
-  background: var(--hud-cyan);
-  border-color: var(--hud-cyan);
+  color: #04141a;
+  background: linear-gradient(160deg, #6ff2ff, var(--hud-cyan));
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 16px rgba(25, 230, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .seg-btn:hover,
 .calib-btn:hover {
-  border-color: var(--hud-cyan);
+  border-color: rgba(255, 255, 255, 0.35);
   color: var(--text);
+  background: var(--glass-bg-strong);
+}
+
+.modes {
+  margin-bottom: 0.4rem;
+}
+.modes .seg-btn {
+  flex: 1;
+  text-align: center;
+  font-size: 0.6rem;
+  padding: 0.5rem 0.25rem;
 }
 
 .calib-btn {
   margin-top: auto;
-  padding: 0.7rem;
+  padding: 0.75rem;
 }
 .calib-btn:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+.disclaimer {
+  margin: 0.9rem 0 0;
+  font-size: 0.62rem;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+/* ---- Media (webcam / sample video) ---- */
+.media--off {
+  display: none;
+}
+.media--on {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow), var(--inset-edge);
+}
+.feed {
+  width: 100%;
+  max-height: 42vh;
+  object-fit: contain;
+  display: block;
+}
+.feed--mirror {
+  transform: scaleX(-1);
+}
+.hud-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.media-hint {
+  position: absolute;
+  bottom: 0.9rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
+  letter-spacing: 0.08rem;
+  color: var(--text);
+  background: rgba(5, 8, 13, 0.72);
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  white-space: nowrap;
 }
 
 /* ---- Stress vignette ---- */
@@ -251,120 +444,9 @@ input[type='range'] {
   background: radial-gradient(
     120% 120% at 50% 50%,
     transparent 52%,
-    rgba(64, 224, 208, 0.28) 100%
+    rgba(64, 224, 208, 0.3) 100%
   );
   transition: opacity 1.2s ease;
-}
-
-/* ---- Media (webcam / sample video) ---- */
-.media--off {
-  display: none;
-}
-.media--on {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  border: 1px solid var(--panel-border);
-  border-radius: 10px;
-  overflow: hidden;
-  background: #000;
-}
-.feed {
-  width: 100%;
-  max-height: 42vh;
-  object-fit: contain;
-  display: block;
-}
-.feed--mirror {
-  transform: scaleX(-1);
-}
-.media-hint {
-  position: absolute;
-  bottom: 0.8rem;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.72rem;
-  letter-spacing: 0.08rem;
-  color: var(--text);
-  background: rgba(5, 8, 13, 0.72);
-  padding: 0.4rem 0.85rem;
-  border-radius: 6px;
-  border: 1px solid var(--panel-border);
-  white-space: nowrap;
-}
-
-/* ---- Mode switcher / status ---- */
-.modes {
-  margin-bottom: 0.4rem;
-}
-.modes .seg-btn {
-  flex: 1;
-  text-align: center;
-  font-size: 0.6rem;
-  padding: 0.45rem 0.25rem;
-}
-.status-msg {
-  font-size: 0.72rem;
-  color: var(--hud-amber);
-  letter-spacing: 0.08rem;
-}
-
-/* ---- Hero heart-rate card ---- */
-.stat--hero {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-}
-.hero-text {
-  display: flex;
-  flex-direction: column;
-}
-.pulse-heart {
-  flex: none;
-  transform-origin: center;
-  animation-name: heartbeat;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  filter: drop-shadow(0 0 8px rgba(255, 77, 94, 0.6));
-}
-@keyframes heartbeat {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  12% {
-    transform: scale(1.18);
-  }
-  26% {
-    transform: scale(1);
-  }
-}
-
-/* ---- Stress gauge card ---- */
-.stat--gauge {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  padding: 0.6rem;
-}
-.gauge-text {
-  font-size: 1.05rem;
-  font-weight: 700;
-  font-family: var(--font-mono);
-}
-.gauge-label {
-  letter-spacing: 0.2rem;
-}
-
-/* ---- HUD overlay (camera) ---- */
-.hud-overlay {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
 }
 
 /* ---- Decorative HUD frame ---- */
@@ -377,31 +459,32 @@ input[type='range'] {
 }
 .corner {
   position: absolute;
-  width: 22px;
-  height: 22px;
-  border: 2px solid var(--hud-cyan-dim);
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  border-radius: 3px;
 }
 .corner--tl {
-  top: 10px;
-  left: 10px;
+  top: 12px;
+  left: 12px;
   border-right: 0;
   border-bottom: 0;
 }
 .corner--tr {
-  top: 10px;
-  right: 10px;
+  top: 12px;
+  right: 12px;
   border-left: 0;
   border-bottom: 0;
 }
 .corner--bl {
-  bottom: 10px;
-  left: 10px;
+  bottom: 12px;
+  left: 12px;
   border-right: 0;
   border-top: 0;
 }
 .corner--br {
-  bottom: 10px;
-  right: 10px;
+  bottom: 12px;
+  right: 12px;
   border-left: 0;
   border-top: 0;
 }
@@ -435,14 +518,7 @@ input[type='range'] {
   }
 }
 
-.disclaimer {
-  margin: 0.9rem 0 0;
-  font-size: 0.62rem;
-  line-height: 1.55;
-  color: var(--text-dim);
-}
-
-/* ---- Responsive: stack the control panel under the stage on narrow windows ---- */
+/* ---- Responsive: stack the panel under the stage on narrow windows ---- */
 @media (max-width: 920px) {
   html,
   body,
@@ -459,8 +535,7 @@ input[type='range'] {
     min-height: 100%;
   }
   .panel {
-    border-left: 0;
-    border-top: 1px solid var(--panel-border);
+    border-top: 1px solid var(--glass-border);
   }
   .readouts {
     grid-template-columns: repeat(2, 1fr);
