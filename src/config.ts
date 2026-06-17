@@ -31,8 +31,13 @@ export const config = {
   breathsEmaAlpha: 0.2,
   stressEmaAlpha: 0.1, // slower EMA for the stress score (≈10 s time constant)
 
-  // ---- Confidence gating ----
-  minSnrDb: 2.0, // below this we hold the last value / show "acquiring"
+  // ---- Confidence model ----
+  minSnrDb: 2.0, // SNR below which a reading isn't folded into the smoothed BPM
+  snrFloorDb: 1.5, // display confidence: SNR at/below this maps to 0
+  snrCeilDb: 9.5, // display confidence: SNR at/above this maps to full
+  freshMinAgeMs: 300, // a sample newer than this counts as fully "live"
+  freshMaxAgeMs: 1200, // no fresh sample within this → treated as no signal
+  gapResetMs: 700, // a sampling gap longer than this restarts acquisition
 
   // ---- Stress score ----
   stressHrWeight: 0.6,

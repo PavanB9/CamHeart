@@ -72,11 +72,12 @@ function median(xs: number[]): number {
  * `config.analysisHz`, everything else is cheap.
  */
 export class VitalsEngine {
-  private buffer = new RgbRingBuffer(config.bufferSec * 1000);
+  private buffer = new RgbRingBuffer(config.bufferSec * 1000, config.gapResetMs);
   private algo: RppgAlgorithm = config.defaultAlgorithm;
   private bpmEma: number | null = null;
   private breathsEma: number | null = null;
   private stressEma = 0;
+  private confidenceEma = 0;
   private lastAnalysisMs = 0;
   private baseline: { restingBpm: number; baselineRmssd: number } | null = null;
   private calib: Calibration | null = null;
@@ -102,6 +103,7 @@ export class VitalsEngine {
     this.bpmEma = null;
     this.breathsEma = null;
     this.stressEma = 0;
+    this.confidenceEma = 0;
     this.lastAnalysisMs = 0;
     this.calib = null;
     this.latest = emptyVitals(this.algo);
@@ -157,6 +159,7 @@ export class VitalsEngine {
 
     const hrData = this.windowPulse(config.hrWindowSec);
     if (!hrData) {
+      this.confidenceEma = 0;
       this.latest = {
         ...emptyVitals(this.algo),
         bufferSec,
@@ -168,13 +171,46 @@ export class VitalsEngine {
       return;
     }
 
+    // --- Liveness & data sufficiency (independent of spectral quality) ---
+    // If fresh samples have stopped arriving (camera blocked / no face in view),
+    // the buffer goes stale and any reading off it is meaningless.
+    const lastT = this.buffer.lastTimestamp;
+    const ageMs = lastT == null ? Infinity : now - lastT;
+    const live = clamp(
+      (config.freshMaxAgeMs - ageMs) / (config.freshMaxAgeMs - config.freshMinAgeMs),
+      0,
+      1,
+    );
+    // Need close to a full analysis window before any reading is trustworthy.
+    const fill = clamp(bufferSec / config.hrWindowSec, 0, 1);
+
     // --- Heart rate ---
     const hr = estimateHeartRate(hrData.pulse, fs);
     const snrDb = hr ? hr.snrDb : -Infinity;
-    const confidence = hr ? 1 / (1 + Math.exp(-(hr.snrDb - config.minSnrDb))) : 0;
-    if (hr && hr.confident) {
+    const snrQuality = hr
+      ? clamp(
+          (hr.snrDb - config.snrFloorDb) / (config.snrCeilDb - config.snrFloorDb),
+          0,
+          1,
+        )
+      : 0;
+
+    // Overall confidence: liveness, sufficiency AND spectral quality must all be
+    // high to be "sure". Smoothed, but snapped to 0 the instant data dies.
+    const rawConfidence = live * fill * snrQuality;
+    if (live < 0.15) {
+      this.confidenceEma = rawConfidence; // no fresh signal → drop immediately
+    } else {
+      const a = rawConfidence < this.confidenceEma ? 0.5 : 0.25; // fall fast, rise slow
+      this.confidenceEma = ema(this.confidenceEma, rawConfidence, a);
+    }
+    const confidence = this.confidenceEma;
+
+    // Only fold a reading into the smoothed BPM when it's fresh and clean.
+    const usable = hr != null && hr.confident && live > 0.5 && fill > 0.4;
+    if (usable) {
       this.bpmEma =
-        this.bpmEma == null ? hr.bpm : ema(this.bpmEma, hr.bpm, config.bpmEmaAlpha);
+        this.bpmEma == null ? hr!.bpm : ema(this.bpmEma, hr!.bpm, config.bpmEmaAlpha);
     }
 
     // --- Waveform for the graph ---
@@ -186,7 +222,7 @@ export class VitalsEngine {
     // --- Breathing (longer window, green channel baseline) ---
     let breaths = this.breathsEma;
     const wb = this.buffer.window(config.respWindowSec);
-    if (wb.t.length >= fs * 10) {
+    if (live > 0.5 && wb.t.length >= fs * 10) {
       const gb = resampleUniform(wb.t, wb.g, fs).values;
       const br = estimateBreathing(zscore(gb), fs);
       if (br && br.confident) {
@@ -200,11 +236,13 @@ export class VitalsEngine {
 
     // --- HRV (longest window) ---
     let rmssd: number | null = null;
-    const hrvData = this.windowPulse(config.hrvWindowSec);
-    if (hrvData) {
-      const hf = bandpass(hrvData.pulse, fs, config.hrBand[0], config.hrBand[1]);
-      const hrv = estimateHrv(hf, fs);
-      if (hrv) rmssd = hrv.rmssd;
+    if (live > 0.5) {
+      const hrvData = this.windowPulse(config.hrvWindowSec);
+      if (hrvData) {
+        const hf = bandpass(hrvData.pulse, fs, config.hrBand[0], config.hrBand[1]);
+        const hrv = estimateHrv(hf, fs);
+        if (hrv) rmssd = hrv.rmssd;
+      }
     }
 
     // --- Calibration capture ---
@@ -213,7 +251,7 @@ export class VitalsEngine {
     if (this.calib) {
       calibrating = true;
       calibrationProgress = clamp((now - this.calib.startMs) / this.calib.totalMs, 0, 1);
-      if (hr && hr.confident) this.calib.bpms.push(hr.bpm);
+      if (usable) this.calib.bpms.push(hr!.bpm);
       if (rmssd != null) this.calib.rmssds.push(rmssd);
       if (now >= this.calib.untilMs) {
         const rb = median(this.calib.bpms);
@@ -234,7 +272,7 @@ export class VitalsEngine {
       baselineRmssd: DEFAULT_BASELINE_RMSSD,
     };
     const bpmForStress = this.bpmEma ?? hr?.bpm ?? null;
-    if (bpmForStress != null) {
+    if (live > 0.5 && bpmForStress != null) {
       const raw = computeStress({
         bpm: bpmForStress,
         rmssd,

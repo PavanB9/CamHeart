@@ -23,9 +23,18 @@ export class RgbRingBuffer {
   private g: number[] = [];
   private b: number[] = [];
 
-  constructor(private readonly retentionMs: number) {}
+  constructor(
+    private readonly retentionMs: number,
+    private readonly gapResetMs = Infinity,
+  ) {}
 
   push(s: RgbSample): void {
+    const n = this.t.length;
+    if (n > 0 && s.t - this.t[n - 1] > this.gapResetMs) {
+      // A gap this large means the signal was interrupted (e.g. the face left
+      // the frame); discard the stale data so acquisition restarts cleanly.
+      this.clear();
+    }
     this.t.push(s.t);
     this.r.push(s.r);
     this.g.push(s.g);
@@ -44,6 +53,11 @@ export class RgbRingBuffer {
 
   get length(): number {
     return this.t.length;
+  }
+
+  /** Timestamp (ms) of the most recent sample, or null if empty. */
+  get lastTimestamp(): number | null {
+    return this.t.length ? this.t[this.t.length - 1] : null;
   }
 
   /** The most recent `seconds` of samples. */
