@@ -7,6 +7,7 @@ import PulseHeart from './hud/PulseHeart';
 import StressGauge from './hud/StressGauge';
 import HudFrame from './hud/HudFrame';
 import HudOverlay from './hud/HudOverlay';
+import InfoTip from './hud/InfoTip';
 import { palette } from './hud/palette';
 import type { RppgAlgorithm } from './config';
 
@@ -75,7 +76,10 @@ function AlgoToggle({
   const algos: RppgAlgorithm[] = ['pos', 'green'];
   return (
     <div className="algo">
-      <span className="slider-label">Algorithm</span>
+      <span className="slider-label">
+        Algorithm
+        <InfoTip text="POS uses all three colour channels and cancels most motion and lighting noise — the robust default. GREEN uses only the green channel: simpler, but easily thrown off by movement or changing light." />
+      </span>
       <div className="seg">
         {algos.map((a) => (
           <button
@@ -246,9 +250,16 @@ export default function App() {
 
         <AlgoToggle value={e.algorithm} onChange={e.setAlgorithm} />
 
-        <button className="calib-btn" onClick={e.startCalibration} disabled={v.calibrating}>
-          {v.calibrating ? 'Calibrating…' : 'Calibrate (45s rest)'}
-        </button>
+        <div className="calib-row">
+          <button className="calib-btn" onClick={e.startCalibration} disabled={v.calibrating}>
+            {v.calibrating ? 'Calibrating…' : 'Calibrate (45s rest)'}
+          </button>
+          <InfoTip
+            up
+            alignRight
+            text="Sit at rest for 45 s while it records your resting heart rate and HRV. Stress is then shown relative to that personal baseline (0% = your rest). Calibrate while calm — it's a fun proxy, not a medical reading."
+          />
+        </div>
 
         <p className="disclaimer">
           Not a medical device — readings are approximate and processed entirely
