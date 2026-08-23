@@ -94,8 +94,13 @@ All tunables (window lengths, frequency bands, smoothing) live in
 
 ## Tech
 
-Vite 8 · React 19 · TypeScript · `@mediapipe/tasks-vision` (FaceLandmarker) ·
-hand-rolled DSP · Vitest.
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![MediaPipe](https://img.shields.io/badge/MediaPipe-0097A7?style=for-the-badge&logo=mediapipe&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)
+
+`@mediapipe/tasks-vision` (FaceLandmarker) for face tracking, plus hand-rolled DSP for the rPPG signal pipeline (no icon for that one, it's not a named library).
 
 ## License
 
