@@ -2,6 +2,8 @@
 
 **▶ Live (runs in your browser, no install): https://pavanb9.github.io/CamHeart/**
 
+**🎬 Demo video:** [watch it in your browser](https://pavanb9.github.io/CamHeart/camheart-demo.mp4) · [download it from the v1.0 release](https://github.com/PavanB9/CamHeart/releases/tag/v1.0)
+
 A cyberpunk webcam overlay that estimates your **heart rate**, **breathing rate**,
 and a **stress proxy** in real time — using only a regular camera, entirely in the
 browser, with no data leaving your machine.
